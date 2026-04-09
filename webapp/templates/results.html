@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Results</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .header-bar {
+            background: #2b2d42;
+            color: white;
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .job-card {
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 1.5rem;
+        }
+        .job-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .score-badge {
+            background-color: #edf2f7;
+            color: #2b6cb0;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+        }
+        .company-name {
+            color: #4a5568;
+            font-weight: 600;
+        }
+        .job-location {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+        .highlight {
+            background-color: #fef08a;
+            font-weight: bold;
+            padding: 0 2px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar text-center">
+        <div class="container d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Top Job Matches</h2>
+            <a href="/" class="btn btn-outline-light">Back to Search</a>
+        </div>
+    </div>
+
+    <div class="container">
+        {% if jobs %}
+            <div class="row">
+                {% for job in jobs %}
+                <div class="col-12">
+                    <div class="card job-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="card-title fw-bold text-dark mb-1">{{ job.title }}</h5>
+                                    <div class="company-name mb-1">
+                                        <i class="bi bi-building"></i> {{ job.company }} &bull; 
+                                        <span class="job-location">{{ job.location }}</span>
+                                    </div>
+                                    <div class="badge bg-secondary mb-3">{{ job.source }}</div>
+                                </div>
+                                <div class="score-badge">
+                                    {{ job.relevance_score }}% Match
+                                </div>
+                            </div>
+                            
+                            <p class="card-text text-muted" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                {% set desc = job.description %}
+                                {% for skill in skills %}
+                                    {% set desc = desc | replace(skill, '<span class="highlight">' + skill + '</span>') | replace(skill|capitalize, '<span class="highlight">' + skill|capitalize + '</span>') %}
+                                {% endfor %}
+                                {{ desc | safe }}
+                            </p>
+                            
+                            <a href="{{ job.url }}" target="_blank" class="btn btn-primary mt-2">Apply Now</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center mt-5">
+                <h3 class="text-muted">No jobs found. Try running the scrapers to populate the database.</h3>
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>
