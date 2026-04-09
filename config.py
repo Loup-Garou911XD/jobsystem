@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Base directory
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -8,6 +11,9 @@ DATABASE_PATH = os.path.join(BASE_DIR, 'jobs_data', 'jobs.db')
 
 # Apify APIs
 APIFY_TOKEN = 'apify_api_3eK6bbgWWJ5xkzJgqWd6m40acJ5GMY19iQXi'
+
+# Gemini API
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 
 # Scraper configurations
 INDEED_API_URL = 'https://api.apify.com/v2/acts/misceres~indeed-scraper/run-sync-get-dataset-items'

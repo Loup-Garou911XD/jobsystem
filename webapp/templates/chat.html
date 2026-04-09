@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Recommendation Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .messages {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        .bot .message-content {
+            background: #f0f0f0;
+            color: #333;
+            border-bottom-left-radius: 2px;
+        }
+
+        .recommendations {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            max-width: 70%;
+        }
+
+        .recommendations h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .job-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 3px solid #667eea;
+            border-radius: 4px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+
+        .job-item:hover {
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateX(4px);
+        }
+
+        .job-details {
+            flex: 1;
+        }
+
+        .job-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .job-company {
+            color: #764ba2;
+            font-size: 13px;
+            margin-bottom: 3px;
+        }
+
+        .job-location {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .job-apply-btn {
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: transform 0.2s, box-shadow 0.2s;
+            flex-shrink: 0;
+        }
+
+        .job-apply-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .job-apply-btn:active {
+            transform: translateY(0);
+        }
+
+        .profile-status {
+            background: #e8f5e9;
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 14px;
+            max-width: 70%;
+        }
+
+        .profile-status ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .profile-status li {
+            color: #2e7d32;
+            margin-bottom: 4px;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: #f5f5f5;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-box {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.reset-btn {
+            background: #f44336;
+            padding: 10px 15px;
+            font-size: 12px;
+        }
+
+        button.reset-btn:hover {
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .error-message {
+            color: #d32f2f;
+            padding: 10px;
+            background: #ffebee;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            .message-content,
+            .recommendations,
+            .profile-status {
+                max-width: 100%;
+            }
+
+            input[type="text"] {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💼 Job Recommendation Bot</h1>
+            <p>Powered by Gemini AI - Tell me about your skills and find your perfect job!</p>
+        </div>
+
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <div class="message bot">
+                    <div class="message-content">
+                        👋 Hello! I'm your Job Recommendation Assistant. I'm here to help you find the perfect job based on your skills and experience.
+                        <br><br>
+                        Let's start by telling me about yourself. What are your key professional skills? (e.g., Python, JavaScript, Data Analysis, etc.)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-box">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    placeholder="Tell me about your skills, experience, and preferred location..."
+                    autocomplete="off"
+                >
+                <button onclick="sendMessage()">Send</button>
+                <button class="reset-btn" onclick="resetChat()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+
+        // Focus on input field on load
+        messageInput.focus();
+
+        // Handle Enter key
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Clear input
+            messageInput.value = '';
+            messageInput.focus();
+
+            // Display user message
+            displayMessage(message, 'user');
+
+            // Show loading indicator
+            const loadingDiv = displayLoading();
+
+            // Send to backend
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove loading indicator
+                loadingDiv.remove();
+
+                if (data.error) {
+                    displayMessage('❌ Error: ' + data.error, 'bot');
+                    return;
+                }
+
+                // Display bot response
+                displayMessage(data.response, 'bot');
+
+                // Display recommendations if available
+                if (data.recommendations && data.recommendations.length > 0) {
+                    displayRecommendations(data.recommendations);
+                }
+
+                // Display profile status
+                if (data.profile.skills.length > 0) {
+                    displayProfileStatus(data.profile);
+                }
+            })
+            .catch(error => {
+                loadingDiv.remove();
+                displayMessage('❌ Connection error: ' + error.message, 'bot');
+            });
+        }
+
+        function displayMessage(text, role) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ' + role;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = text;
+            
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function displayLoading() {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content loading';
+            contentDiv.innerHTML = '<div class="loading-spinner"></div> Thinking...';
+            
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            return messageDiv;
+        }
+
+        function displayRecommendations(jobs) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'recommendations';
+            
+            let html = '<h4>🎯 Recommended Jobs for You:</h4>';
+            jobs.forEach((job, index) => {
+                html += `
+                    <div class="job-item">
+                        <div class="job-details">
+                            <div class="job-title">${index + 1}. ${job.title}</div>
+                            <div class="job-company">${job.company}</div>
+                            <div class="job-location">📍 ${job.location}</div>
+                            ${job.description ? '<div style="font-size: 12px; color: #888; margin-top: 4px;">' + job.description.substring(0, 100) + '...</div>' : ''}
+                        </div>
+                        <button class="job-apply-btn" onclick="applyToJob('${job.url}', '${job.title}')">Apply Now</button>
+                    </div>
+                `;
+            });
+            
+            contentDiv.innerHTML = html;
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function displayProfileStatus(profile) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'profile-status';
+            
+            let html = '<strong>✅ Your Profile:</strong><ul>';
+            if (profile.skills.length > 0) {
+                html += '<li><strong>Skills:</strong> ' + profile.skills.join(', ') + '</li>';
+            }
+            if (profile.experience) {
+                html += '<li><strong>Experience:</strong> ' + profile.experience + '</li>';
+            }
+            if (profile.location) {
+                html += '<li><strong>Location:</strong> ' + profile.location + '</li>';
+            }
+            html += '</ul>';
+            
+            contentDiv.innerHTML = html;
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function resetChat() {
+            if (confirm('Are you sure you want to reset the conversation?')) {
+                fetch('/api/reset', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(() => {
+                    // Clear messages
+                    messagesContainer.innerHTML = `
+                        <div class="message bot">
+                            <div class="message-content">
+                                👋 Hello! I'm your Job Recommendation Assistant. I'm here to help you find the perfect job based on your skills and experience.
+                                <br><br>
+                                Let's start by telling me about yourself. What are your key professional skills? (e.g., Python, JavaScript, Data Analysis, etc.)
+                            </div>
+                        </div>
+                    `;
+                    messageInput.focus();
+                })
+                .catch(error => {
+                    displayMessage('❌ Reset failed: ' + error.message, 'bot');
+                });
+            }
+        }
+
+        function applyToJob(jobUrl, jobTitle) {
+            if (!jobUrl) {
+                alert('Job URL not available');
+                return;
+            }
+            // Open the job URL in a new tab
+            window.open(jobUrl, '_blank');
+            
+            // Optional: Log analytics or send apply event to backend
+            console.log('Applied to job:', jobTitle);
+        }
+    </script>
+</body>
+</html>
